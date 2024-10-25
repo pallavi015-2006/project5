@@ -1,67 +1,49 @@
-const navToggle = document.querySelector('nav.fa-bars');
-const navLinks = document.querySelector('.nav-links');
+document.addEventListener('DOMContentLoaded', function() {
+    const navToggle = document.querySelector('.fa-bars');
+    const navLinks = document.querySelector('nav .nav-links');
 
-navToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
+    navToggle.addEventListener('click', function() {
+        navLinks.classList.toggle('hidemenu');
+    });
 });
-const links = document.querySelectorAll('nav .nav-links li a');
 
-links.forEach(link => {
-    link.addEventListener('click', (e) => {
+
+document.querySelectorAll('nav .nav-links a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const targetId = link.getAttribute('href');
-        const targetSection = document.querySelector(targetId);
-        targetSection.scrollIntoView({ behavior: 'smooth' });
+
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
     });
 });
-const images = document.querySelectorAll('.trending div img, .stories div img');
-const modal = document.createElement('div');
-const modalImg = document.createElement('img');
+document.querySelector('.search-bar form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const query = document.querySelector('.location-input').value.toLowerCase();
+    // Implement your search logic here, e.g., filter displayed items based on the query
+    console.log('Searching for:', query);
+});
+let currentIndex = 0;
 
-modal.style.display = 'none';
-modal.style.position = 'fixed';
-modal.style.top = '0';
-modal.style.left = '0';
-modal.style.width = '100%';
-modal.style.height = '100%';
-modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-modal.style.justifyContent = 'center';
-modal.style.alignItems = 'center';
-modal.style.zIndex = '1000';
+function showNextImage() {
+    const images = document.querySelectorAll('.trending div img');
+    images[currentIndex].style.display = 'none'; // Hide current image
+    currentIndex = (currentIndex + 1) % images.length; // Update index
+    images[currentIndex].style.display = 'block'; // Show next image
+}
 
-modal.appendChild(modalImg);
-document.body.appendChild(modal);
+// Automatically change images every 3 seconds
+setInterval(showNextImage, 3000);
+async function loadStories() {
+    const response = await fetch('https://api.example.com/stories'); // Replace with your API
+    const stories = await response.json();
+    const storiesContainer = document.querySelector('.stories');
 
-images.forEach(image => {
-    image.addEventListener('click', () => {
-        modalImg.src = image.src;
-        modal.style.display = 'flex';
+    stories.forEach(story => {
+        const storyDiv = document.createElement('div');
+        storyDiv.innerHTML = `<img src="${story.image}" alt="${story.title}"><p>${story.description}</p>`;
+        storiesContainer.appendChild(storyDiv);
     });
-});
+}
 
-modal.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
-const elementsToShow = document.querySelectorAll('.fade-in');
-
-const showElements = () => {
-    const windowHeight = window.innerHeight;
-    elementsToShow.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        if (elementTop < windowHeight - 100) {
-            element.classList.add('active');
-        }
-    });
-};
-
-window.addEventListener('scroll', showElements);
-showElements(); // To check on page load
-const form = document.querySelector('.search-bar form');
-const locationInput = document.querySelector('.location-input');
-
-form.addEventListener('submit', (e) => {
-    if (locationInput.value.trim() === '') {
-        e.preventDefault();
-        alert('Please enter a location');
-    }
-});
+loadStories();
